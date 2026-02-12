@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Create Sale{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="m-0 font-weight-bold text-primary">Create New Sale</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" id="saleForm">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.customer.id_for_label }}" class="form-label">Customer</label>
+                                {{ form.customer }}
+                                {% if form.customer.errors %}
+                                    <div class="text-danger">{{ form.customer.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.payment_method.id_for_label }}" class="form-label">Payment Method</label>
+                                {{ form.payment_method }}
+                                {% if form.payment_method.errors %}
+                                    <div class="text-danger">{{ form.payment_method.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.is_paid }}
+                                    <label class="form-check-label" for="{{ form.is_paid.id_for_label }}">
+                                        Payment Received
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.notes.id_for_label }}" class="form-label">Notes</label>
+                        {{ form.notes }}
+                        {% if form.notes.errors %}
+                            <div class="text-danger">{{ form.notes.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'sales_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Create Sale
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">Quick Tips</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="fas fa-info-circle text-info"></i>
+                        <small>Create the sale first, then add items from the sale detail page.</small>
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-user-plus text-success"></i>
+                        <small>Add new customers from the admin panel if needed.</small>
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-box text-warning"></i>
+                        <small>Make sure you have stationery items in your inventory first.</small>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

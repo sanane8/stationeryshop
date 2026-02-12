@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Add Item to Sale #{{ sale.id }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="m-0 font-weight-bold text-primary">Add Item to Sale #{{ sale.id }}</h5>
+                <small class="text-muted">Customer: {{ sale.customer.name|default:"Walk-in" }} | Current Total: TZS {{ sale.total_amount|floatformat:0 }}</small>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="{{ form.product_type.id_for_label }}" class="form-label">Product Type *</label>
+                                {{ form.product_type }}
+                                {% if form.product_type.errors %}
+                                    <div class="text-danger">{{ form.product_type.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="{{ form.retail_item.id_for_label }}" class="form-label retail-item-label">Retail Product *</label>
+                                {{ form.retail_item }}
+                                {% if form.retail_item.errors %}
+                                    <div class="text-danger">{{ form.retail_item.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="{{ form.wholesale_item.id_for_label }}" class="form-label wholesale-item-label">Whole Sale Product *</label>
+                                {{ form.wholesale_item }}
+                                {% if form.wholesale_item.errors %}
+                                    <div class="text-danger">{{ form.wholesale_item.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="{{ form.quantity.id_for_label }}" class="form-label">Quantity *</label>
+                                {{ form.quantity }}
+                                {% if form.quantity.errors %}
+                                    <div class="text-danger">{{ form.quantity.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="{{ form.unit_price.id_for_label }}" class="form-label">Unit Price *</label>
+                                {{ form.unit_price }}
+                                {% if form.unit_price.errors %}
+                                    <div class="text-danger">{{ form.unit_price.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Note:</strong> Select product type first, then choose the specific product. The unit price will default to the product's current price, but you can modify it if needed for this sale. Quantity defaults to 1 and can be changed once a product is selected.
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'sale_detail' sale.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Sale
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Add Item
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const productTypeSelect = document.getElementById('id_product_type');
+    const retailItemSelect = document.getElementById('id_retail_item');
+    const wholesaleItemSelect = document.getElementById('id_wholesale_item');
+    const unitPriceInput = document.getElementById('id_unit_price');
+    const quantityInput = document.getElementById('id_quantity');
+    
+    // Store item prices for quick lookup
+    const retailItemPrices = {
+        {% for item in form.retail_item.field.queryset %}
+        {{ item.pk }}: {{ item.unit_price|floatformat:2 }},
+        {% endfor %}
+    };
+    
+    const wholesaleItemPrices = {
+        {% for item in form.wholesale_item.field.queryset %}
+        {{ item.pk }}: {{ item.selling_price|floatformat:2 }},
+        {% endfor %}
+    };
+    
+    // Set default quantity to 1 when page loads
+    quantityInput.value = 1;
+    
+    // Function to toggle product fields based on selection
+    function toggleProductFields() {
+        const productType = productTypeSelect.value;
+        const retailItemDiv = retailItemSelect.closest('.mb-3');
+        const wholesaleItemDiv = wholesaleItemSelect.closest('.mb-3');
+        
+        if (productType === 'retail') {
+            retailItemDiv.style.display = 'block';
+            wholesaleItemDiv.style.display = 'none';
+            retailItemSelect.required = true;
+            wholesaleItemSelect.required = false;
+            wholesaleItemSelect.value = '';
+        } else if (productType === 'wholesale') {
+            retailItemDiv.style.display = 'none';
+            wholesaleItemDiv.style.display = 'block';
+            wholesaleItemSelect.required = true;
+            retailItemSelect.required = false;
+            retailItemSelect.value = '';
+        }
+    }
+    
+    // Function to update unit price based on selected item
+    function updateUnitPrice() {
+        const productType = productTypeSelect.value;
+        let price = 0;
+        
+        if (productType === 'retail' && retailItemSelect.value) {
+            price = retailItemPrices[retailItemSelect.value] || 0;
+        } else if (productType === 'wholesale' && wholesaleItemSelect.value) {
+            price = wholesaleItemPrices[wholesaleItemSelect.value] || 0;
+        }
+        
+        unitPriceInput.value = price;
+    }
+    
+    // Event listeners
+    productTypeSelect.addEventListener('change', function() {
+        toggleProductFields();
+        updateUnitPrice();
+    });
+    
+    retailItemSelect.addEventListener('change', updateUnitPrice);
+    wholesaleItemSelect.addEventListener('change', updateUnitPrice);
+    
+    // Initialize field visibility
+    toggleProductFields();
+    updateUnitPrice();
+});
+</script>
+{% endblock %}

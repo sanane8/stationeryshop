@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block page_title %}Send Bulk SMS Reminders{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+    <a href="{% url 'debts_list' %}" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left"></i> Back to Debts
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-sms"></i> Send Bulk SMS Reminders
+                </h5>
+                <small class="text-muted">Send SMS reminders to multiple customers with outstanding debts</small>
+            </div>
+            <div class="card-body">
+                <style>
+                /* Loading overlay with three bouncing dots */
+                .sms-loading-overlay {
+                    position: fixed;
+                    inset: 0;
+                    background: rgba(255,255,255,0.75);
+                    display: none;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 1050;
+                }
+                .sms-loader {
+                    display: flex;
+                    gap: 0.6rem;
+                    align-items: center;
+                }
+                .sms-dot {
+                    width: 14px;
+                    height: 14px;
+                    border-radius: 50%;
+                    background-color: #0d6efd; /* bootstrap primary */
+                    animation: sms-bounce 1s infinite ease-in-out;
+                }
+                .sms-dot:nth-child(2) { animation-delay: 0.12s; }
+                .sms-dot:nth-child(3) { animation-delay: 0.24s; }
+                @keyframes sms-bounce {
+                    0%, 80%, 100% { transform: translateY(0); opacity: 0.6; }
+                    40% { transform: translateY(-10px); opacity: 1; }
+                }
+                </style>
+
+                <div id="sms-loading-overlay" class="sms-loading-overlay" role="status" aria-hidden="true">
+                    <div class="sms-loader" aria-hidden="true">
+                        <div class="sms-dot"></div>
+                        <div class="sms-dot"></div>
+                        <div class="sms-dot"></div>
+                    </div>
+                </div>
+                {% if debts %}
+                    <div class="alert alert-info">
+                        <strong>{{ debts|length }} customers</strong> with outstanding debts and phone numbers found.
+                        Select the debts you want to send SMS reminders to.
+                    </div>
+
+                    <form method="post" id="bulk-sms-form">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="select-all" onchange="toggleAllCheckboxes()">
+                                <label class="form-check-label fw-bold" for="select-all">
+                                    Select All Debts
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Select</th>
+                                        <th>Customer</th>
+                                        <th>Phone</th>
+                                        <th>Amount</th>
+                                        <th>Remaining</th>
+                                        <th>Due Date</th>
+                                        <th>Status</th>
+                                        <th>Message Preview</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for debt in debts %}
+                                    <tr>
+                                        <td>
+                                            <input class="form-check-input debt-checkbox" type="checkbox"
+                                                   name="debt_ids" value="{{ debt.id }}" id="debt-{{ debt.id }}">
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'customer_detail' debt.customer.pk %}">{{ debt.customer.name }}</a>
+                                        </td>
+                                        <td>{{ debt.customer.phone }}</td>
+                                        <td>TZS {{ debt.amount|floatformat:0|intcomma }}</td>
+                                        <td>
+                                            <strong class="{% if debt.remaining_amount > 0 %}text-danger{% else %}text-success{% endif %}">
+                                                TZS {{ debt.remaining_amount|floatformat:0|intcomma }}
+                                            </strong>
+                                        </td>
+                                        <td>
+                                            {{ debt.due_date|date:"M d, Y" }}
+                                            {% if debt.is_overdue %}
+                                                <span class="badge bg-danger ms-1">Overdue</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if debt.status == 'pending' %}
+                                                <span class="badge bg-warning">Pending</span>
+                                            {% elif debt.status == 'partial' %}
+                                                <span class="badge bg-info">Partially Paid</span>
+                                            {% elif debt.status == 'overdue' %}
+                                                <span class="badge bg-danger">Overdue</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">
+                                                {% if debt.status == 'overdue' %}
+                                                    Habari {{ debt.customer.name }}, deni lako la TZS {{ debt.remaining_amount|floatformat:0|intcomma }} lilikwisha muda...
+                                                {% else %}
+                                                    Habari {{ debt.customer.name }}, una deni la TZS {{ debt.remaining_amount|floatformat:0|intcomma }} linalotakiwa kulipwa...
+                                                {% endif %}
+                                            </small>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="mt-4 d-grid">
+                            <button type="submit" class="btn btn-success btn-lg" id="send-sms-btn" disabled>
+                                <i class="fas fa-paper-plane"></i> Send SMS to Selected Customers
+                                <span id="selected-count">(0 selected)</span>
+                            </button>
+                        </div>
+                    </form>
+                {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>No eligible customers found</strong><br>
+                        No customers with outstanding debts and phone numbers were found.
+                        Make sure customers have phone numbers and outstanding debts.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleAllCheckboxes() {
+    const selectAll = document.getElementById('select-all');
+    const checkboxes = document.querySelectorAll('.debt-checkbox');
+    checkboxes.forEach(cb => cb.checked = selectAll.checked);
+    updateSelectedCount();
+}
+
+function updateSelectedCount() {
+    const checkboxes = document.querySelectorAll('.debt-checkbox:checked');
+    const count = checkboxes.length;
+    const countSpan = document.getElementById('selected-count');
+    const sendBtn = document.getElementById('send-sms-btn');
+
+    countSpan.textContent = `(${count} selected)`;
+    sendBtn.disabled = count === 0;
+}
+
+function showSmsLoading() {
+    const overlay = document.getElementById('sms-loading-overlay');
+    if (!overlay) return;
+    overlay.style.display = 'flex';
+    overlay.setAttribute('aria-hidden', 'false');
+}
+
+// Add event listeners to individual checkboxes and form submit
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('.debt-checkbox');
+    checkboxes.forEach(cb => cb.addEventListener('change', updateSelectedCount));
+
+    const form = document.getElementById('bulk-sms-form');
+    const sendBtn = document.getElementById('send-sms-btn');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // Show loading overlay and disable button to prevent double submits
+            showSmsLoading();
+            if (sendBtn) {
+                sendBtn.disabled = true;
+                sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Sending...';
+            }
+            // allow form to submit normally so server handles SMS sending
+        });
+    }
+});
+</script>
+{% endblock %}

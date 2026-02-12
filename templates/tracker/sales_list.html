@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+{% load humanize tz querystring %}
+
+{% block page_title %}Sales{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex justify-content-between align-items-center">
+    <div class="btn-group" role="group">
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+        <a href="{% url 'create_sale' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> New Sale
+        </a>
+        <a href="{% url 'sales_chart' %}" class="btn btn-info">
+            <i class="fas fa-chart-line"></i> Sales Chart
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col">
+                <label for="start_date" class="form-label">Start Date</label>
+                <input type="date" class="form-control form-control-sm" id="start_date" name="start_date" value="{{ start_date }}">
+            </div>
+            <div class="col">
+                <label for="end_date" class="form-label">End Date</label>
+                <input type="date" class="form-control form-control-sm" id="end_date" name="end_date" value="{{ end_date }}">
+            </div>
+            <div class="col">
+                <label for="payment_status" class="form-label">Payment Status</label>
+                <select class="form-select form-select-sm" id="payment_status" name="payment_status">
+                    <option value="all" {% if payment_status == 'all' %}selected{% endif %}>All</option>
+                    <option value="paid" {% if payment_status == 'paid' %}selected{% endif %}>Paid</option>
+                    <option value="unpaid" {% if payment_status == 'unpaid' %}selected{% endif %}>Unpaid</option>
+                </select>
+            </div>
+            <div class="col">
+                <label for="product" class="form-label">Product</label>
+                <input type="text" class="form-control form-control-sm" id="product" name="product" value="{{ product_search }}" placeholder="Product name…">
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary btn-sm me-1">
+                    <i class="fas fa-search"></i> Filter
+                </button>
+                <a href="{% url 'sales_list' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-times"></i> Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Daily Totals and Profit (report with fields like Daily Summary; respects date & product filters) -->
+{% if daily_sales %}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <strong>Daily Summary</strong>
+        {% if product_search %}
+        <span class="badge bg-info">Filtered by product: {{ product_search }}</span>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm table-striped">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        {% if product_search %}
+                        <th>Product names sold</th>
+                        {% endif %}
+                        <th class="text-end">Total Sold (TZS)</th>
+                        <th class="text-end">Profit (TZS)</th>
+                        {% if product_search %}
+                        <th class="text-end">Qty “{{ product_search }}”</th>
+                        {% endif %}
+                        <th class="text-center">Number of Sales</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in daily_sales %}
+                    <tr>
+                        <td>{{ d.date|date:"Y-m-d" }}</td>
+                        {% if product_search %}
+                        <td>{{ d.product_names|join:", "|default:"—" }}</td>
+                        {% endif %}
+                        <td class="text-end text-success">TZS {{ d.revenue|floatformat:0|intcomma }}</td>
+                        <td class="text-end">TZS {{ d.profit|floatformat:0|intcomma }}</td>
+                        {% if product_search %}
+                        <td class="text-end">{{ d.product_qty|floatformat:0|intcomma }}</td>
+                        {% endif %}
+                        <td class="text-center">{{ d.count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="table-primary fw-bold">
+                        <td>Total</td>
+                        {% if product_search %}
+                        <td>—</td>
+                        {% endif %}
+                        <td class="text-end text-success">TZS {{ daily_summary_total_sold|floatformat:0|intcomma }}</td>
+                        <td class="text-end">TZS {{ daily_summary_total_profit|floatformat:0|intcomma }}</td>
+                        {% if product_search %}
+                        <td class="text-end">{{ daily_summary_total_product_qty|floatformat:0|intcomma }}</td>
+                        {% endif %}
+                        <td class="text-center">—</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer text-muted small">
+        Summary shows totals for the currently filtered sales.
+        {% if product_search %}Only sales containing “{{ product_search }}” are included.{% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Sales Table -->
+<div class="card">
+    <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">Sales ({{ sales.paginator.count }})</h6>
+    </div>
+    <div class="card-body">
+        <div class="mb-3 text-end">
+            <a href="{% url 'sales_daily_export' %}?start_date={{ start_date|default:'' }}&end_date={{ end_date|default:'' }}&payment_status={{ payment_status }}{% if product_search %}&product={{ product_search|urlencode }}{% endif %}" class="btn btn-sm btn-outline-secondary me-2">
+                <i class="fas fa-file-csv"></i> Export All Sales (CSV)
+            </a>
+            <a href="{% url 'sales_daily_print' %}?start_date={{ start_date|default:'' }}&end_date={{ end_date|default:'' }}&payment_status={{ payment_status }}{% if product_search %}&product={{ product_search|urlencode }}{% endif %}" target="_blank" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-print"></i> Print All Sales
+            </a>
+        </div>
+        {% if sales %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <colgroup>
+                        <col style="width:80px;" />
+                        <col style="width:150px;" />
+                        <col />
+                        <col style="width:180px;" />
+                        <col style="width:220px;" />
+                        <col style="width:120px;" />
+                        <col style="width:100px;" />
+                        <col style="width:160px;" />
+                        <col style="width:120px;" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>Sale #</th>
+                            <th>Date</th>
+                            <th>Products</th>
+                            <th class="numeric-col money-col">Profit</th>
+                            <th class="numeric-col money-col">Amount</th>
+                            <th>Payment Method</th>
+                            <th>Status</th>
+                            <th>Created By</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sale in sales %}
+                        <tr>
+                            <td><strong>#{{ sale.id }}</strong></td>
+                            <td>{{ sale.sale_date|localtime|date:"M d, Y H:i" }}</td>
+                            <td>
+                                {% for item in sale.items.all %}
+                                    <span class="badge bg-light text-dark me-1">{{ item.item.name }} ({{ item.quantity }})</span>
+                                {% empty %}
+                                    {% if "Payment for" in sale.notes %}
+                                        <span class="badge bg-info text-white me-1">
+                                            <i class="fas fa-money-bill-wave"></i> Payment
+                                        </span>
+                                        <div class="small text-muted mt-1">
+                                            {{ sale.notes }}
+                                        </div>
+                                    {% elif sale.products %}
+                                        <span class="badge bg-light text-dark me-1">{{ sale.products }}</span>
+                                    {% else %}
+                                        <span class="text-muted">No items</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td class="numeric-col money-col">TZS {{ sale.annotated_profit|default:0|floatformat:0|intcomma }}</td>
+                            <td class="numeric-col money-col"><strong>TZS {{ sale.total_amount|floatformat:0|intcomma }}</strong></td>
+                            <td>{{ sale.get_payment_method_display }}</td>
+                            <td>
+                                {% if sale.is_paid %}
+                                    <span class="badge bg-success"><i class="fas fa-check"></i> Paid</span>
+                                {% else %}
+                                    <span class="badge bg-warning"><i class="fas fa-clock"></i> Unpaid</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if sale.created_by_display %}
+                                    {{ sale.created_by_display }}
+                                {% elif sale.created_by %}
+                                    {{ sale.created_by.get_full_name|default:sale.created_by.username }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'sale_detail' sale.pk %}" class="btn btn-outline-primary" title="View Sale Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'print_invoice' sale.pk %}" target="_blank" class="btn btn-outline-secondary" title="Print Invoice">
+                                        <i class="fas fa-print"></i>
+                                    </a>
+                                    <form method="post" action="{% url 'delete_sale' sale.pk %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-outline-danger" title="Delete Sale" onclick="return confirm('Delete sale and restore stock?');">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No sales found</h5>
+                <p class="text-muted">Start by creating your first sale.</p>
+                <a href="{% url 'create_sale' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create First Sale
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% if page_obj.has_other_pages %}
+<nav aria-label="Sales pagination" class="mt-3">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?{% url_replace 'page' page_obj.previous_page_number %}">Previous</a></li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Previous</span></li>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+            {% if num == page_obj.number %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% else %}
+                <li class="page-item"><a class="page-link" href="?{% url_replace 'page' num %}">{{ num }}</a></li>
+            {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?{% url_replace 'page' page_obj.next_page_number %}">Next</a></li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Next</span></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

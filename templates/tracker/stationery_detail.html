@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% load humanize tz %}
+
+{% block page_title %}{{ item.name }}{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+    <a href="/admin/tracker/stationeryitem/{{ item.pk }}/change/" class="btn btn-outline-secondary">
+        <i class="fas fa-edit"></i> Edit
+    </a>
+    <a href="{% url 'stationery_list' %}" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left"></i> Back to Retail Products
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="m-0 font-weight-bold text-primary">{{ item.name }}</h5>
+                <small class="text-muted">SKU: {{ item.sku }}</small>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Item Details</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Category:</strong></td>
+                                <td>{{ item.category.name }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>SKU:</strong></td>
+                                <td><code>{{ item.sku }}</code></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Supplier:</strong></td>
+                                <td>{{ item.supplier|default:"Not specified" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Status:</strong></td>
+                                <td>
+                                    {% if item.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Pricing & Stock</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Unit Price:</strong></td>
+                                <td>TZS {{ item.unit_price|floatformat:0 | intcomma}}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Cost Price:</strong></td>
+                                <td>TZS {{ item.cost_price|floatformat:0 |intcomma}}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Profit Margin:</strong></td>
+                                <td>{{ item.profit_margin|floatformat:1 |intcomma}}%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Stock Quantity:</strong></td>
+                                <td>
+                                    <span class="{% if item.is_low_stock %}text-warning{% else %}text-success{% endif %}">
+                                        {{ item.stock_quantity }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Minimum Stock:</strong></td>
+                                <td>{{ item.minimum_stock }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                {% if item.description %}
+                <div class="mt-3">
+                    <h6>Description</h6>
+                    <p>{{ item.description }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">Stock Status</h6>
+            </div>
+            <div class="card-body text-center">
+                {% if item.is_low_stock %}
+                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                    <h5 class="text-warning">Low Stock</h5>
+                    <p class="text-muted">Current: {{ item.stock_quantity }}<br>Minimum: {{ item.minimum_stock }}</p>
+                {% else %}
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <h5 class="text-success">Stock OK</h5>
+                    <p class="text-muted">Current: {{ item.stock_quantity }}<br>Minimum: {{ item.minimum_stock }}</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">Recent Sales</h6>
+            </div>
+            <div class="card-body">
+                {% if recent_sales %}
+                    {% for sale in recent_sales %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <small class="text-muted">{{ sale.sale_date|localtime|date:"M d, Y" }}</small>
+                        </div>
+                        <div>
+                            <strong>TZS {{ sale.total_amount|floatformat:0 |intcomma}}</strong>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No recent sales</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

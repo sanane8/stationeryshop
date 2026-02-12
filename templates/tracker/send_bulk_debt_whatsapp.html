@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block page_title %}Send Bulk WhatsApp Reminders{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+    <a href="{% url 'debts_list' %}" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left"></i> Back to Debts
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="m-0 font-weight-bold text-primary">
+                    <i class="fab fa-whatsapp"></i> Send Bulk WhatsApp Reminders
+                </h5>
+                <small class="text-muted">Send WhatsApp reminders to multiple customers with outstanding debts</small>
+            </div>
+            <div class="card-body">
+                {% if debts %}
+                    <div class="alert alert-warning">
+                        <h6><i class="fab fa-whatsapp"></i> WhatsApp Not Available</h6>
+                        <p>WhatsApp Business API is not currently available through Africa's Talking Python SDK.</p>
+                        <p><strong>To enable WhatsApp messaging:</strong></p>
+                        <ul>
+                            <li>Go to your Africa's Talking dashboard</li>
+                            <li>Navigate to WhatsApp section</li>
+                            <li>Apply for WhatsApp Business API access</li>
+                            <li>Set up your WhatsApp Business Account</li>
+                        </ul>
+                        <p><em>Note: WhatsApp Business API requires separate approval and has additional costs.</em></p>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <h6>Alternative: Use SMS Instead</h6>
+                        <p>You can send SMS reminders which work immediately with your current setup.</p>
+                        <a href="{% url 'send_bulk_debt_sms' %}" class="btn btn-primary">
+                            <i class="fas fa-sms"></i> Send Bulk SMS Reminders Instead
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>No customers found</strong><br>
+                        No customers with outstanding debts and phone numbers were found.
+                        Make sure customers have phone numbers and outstanding debts.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleAllCheckboxes() {
+    const selectAllCheckbox = document.getElementById('select-all');
+    const checkboxes = document.querySelectorAll('.debt-checkbox');
+    const sendBtn = document.getElementById('send-btn');
+    const selectedCount = document.getElementById('selected-count');
+
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = selectAllCheckbox.checked;
+    });
+
+    updateSelectedCount();
+}
+
+function updateSelectedCount() {
+    const checkboxes = document.querySelectorAll('.debt-checkbox:checked');
+    const sendBtn = document.getElementById('send-btn');
+    const selectedCount = document.getElementById('selected-count');
+
+    const count = checkboxes.length;
+    selectedCount.textContent = count;
+    sendBtn.disabled = count === 0;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('.debt-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedCount);
+    });
+
+    updateSelectedCount();
+});
+</script>
+{% endblock %}

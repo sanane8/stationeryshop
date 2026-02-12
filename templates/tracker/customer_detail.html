@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load tz %}
+{% block page_title %}{{ customer.name }}{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+    <a href="{% url 'customers_list' %}" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left"></i> Back to Customers
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="m-0 font-weight-bold text-primary">{{ customer.name }}</h5>
+                <small class="text-muted">Customer since {{ customer.created_at|date:"F d, Y" }}</small>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Contact Information</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Name:</strong></td>
+                                <td>{{ customer.name }}</td>
+                            </tr>
+                            {% if customer.email %}
+                            <tr>
+                                <td><strong>Email:</strong></td>
+                                <td><a href="mailto:{{ customer.email }}">{{ customer.email }}</a></td>
+                            </tr>
+                            {% endif %}
+                            {% if customer.phone %}
+                            <tr>
+                                <td><strong>Phone:</strong></td>
+                                <td><a href="tel:{{ customer.phone }}">{{ customer.phone }}</a></td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <td><strong>Status:</strong></td>
+                                <td>
+                                    {% if customer.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        {% if customer.address %}
+                        <h6>Address</h6>
+                        <p>{{ customer.address|linebreaks }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">Recent Sales</h6>
+            </div>
+            <div class="card-body">
+                {% if sales %}
+                    {% for sale in sales %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <small class="text-muted">{{ sale.sale_date|localtime|date:"M d, Y" }}</small>
+                        </div>
+                        <div>
+                            <strong>TZS {{ sale.total_amount|floatformat:0 }}</strong>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No sales yet</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">Outstanding Debts</h6>
+            </div>
+            <div class="card-body">
+                {% if debts %}
+                    {% for debt in debts %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <small class="text-muted">{{ debt.due_date|date:"M d, Y" }}</small>
+                        </div>
+                        <div>
+                            <strong>TZS {{ debt.remaining_amount|floatformat:0 }}</strong>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No outstanding debts</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Confirm Delete Expenditure{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h3>Confirm Delete</h3>
+    <p>Are you sure you want to delete expenditure <strong>#{{ expenditure.id }}</strong> for <strong>TZS {{ expenditure.amount|floatformat:0|intcomma }}</strong>?</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <a href="{% url 'expenditures_list' %}" class="btn btn-outline-secondary">Cancel</a>
+        <button type="submit" class="btn btn-danger">Delete Expenditure</button>
+    </form>
+</div>
+{% endblock %}

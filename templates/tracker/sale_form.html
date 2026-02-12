@@ -1,0 +1,471 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Create Sale{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card-3d {
+        background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+        border: none;
+        border-radius: 20px;
+        box-shadow: 
+            0 20px 40px rgba(0, 0, 0, 0.1),
+            0 10px 20px rgba(0, 0, 0, 0.05),
+            inset 0 1px 0 rgba(255, 255, 255, 0.6);
+        transform: perspective(1000px) rotateX(2deg);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .card-3d::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #667eea 100%);
+        border-radius: 20px 20px 0 0;
+    }
+    
+    .card-3d:hover {
+        transform: perspective(1000px) rotateX(0deg) translateY(-5px);
+        box-shadow: 
+            0 30px 60px rgba(0, 0, 0, 0.15),
+            0 15px 30px rgba(0, 0, 0, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+    
+    .card-header-3d {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 20px 20px 0 0;
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .card-header-3d::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+        transform: rotate(45deg);
+        animation: shimmer 3s infinite;
+    }
+    
+    @keyframes shimmer {
+        0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+        100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+    
+    .card-body-3d {
+        padding: 2rem;
+        position: relative;
+        background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+    }
+    
+    .form-control-3d {
+        border: 1px solid rgba(102, 126, 234, 0.2);
+        border-radius: 12px;
+        background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+        box-shadow: 
+            inset 0 2px 4px rgba(0, 0, 0, 0.06),
+            0 1px 2px rgba(255, 255, 255, 0.8);
+        transition: all 0.3s ease;
+    }
+    
+    .form-control-3d:focus {
+        border-color: #667eea;
+        box-shadow: 
+            0 0 0 0.2rem rgba(102, 126, 234, 0.25),
+            inset 0 2px 4px rgba(0, 0, 0, 0.06),
+            0 4px 8px rgba(102, 126, 234, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    /* Apply 3D styles to all form controls */
+    .form-control, .form-select {
+        border: 1px solid rgba(102, 126, 234, 0.2) !important;
+        border-radius: 12px !important;
+        background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%) !important;
+        box-shadow: 
+            inset 0 2px 4px rgba(0, 0, 0, 0.06),
+            0 1px 2px rgba(255, 255, 255, 0.8) !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea !important;
+        box-shadow: 
+            0 0 0 0.2rem rgba(102, 126, 234, 0.25),
+            inset 0 2px 4px rgba(0, 0, 0, 0.06),
+            0 4px 8px rgba(102, 126, 234, 0.15) !important;
+        transform: translateY(-2px) !important;
+    }
+    
+    .btn-3d {
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 
+            0 8px 16px rgba(102, 126, 234, 0.3),
+            0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-3d::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .btn-3d:hover {
+        transform: translateY(-3px);
+        box-shadow: 
+            0 12px 24px rgba(102, 126, 234, 0.4),
+            0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .btn-3d:hover::before {
+        left: 100%;
+    }
+    
+    .btn-3d:active {
+        transform: translateY(-1px);
+        box-shadow: 
+            0 6px 12px rgba(102, 126, 234, 0.3),
+            0 3px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-3d {
+        background: linear-gradient(145deg, #f8f9fa 0%, #ffffff 100%);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 
+            0 8px 16px rgba(0, 0, 0, 0.05),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(102, 126, 234, 0.1);
+    }
+    
+    .alert-3d {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 
+            0 4px 8px rgba(23, 162, 184, 0.15),
+            inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card card-3d">
+            <div class="card-header card-header-3d">
+                <h5 class="m-0 font-weight-bold text-white">Create New Sale</h5>
+            </div>
+            <div class="card-body card-body-3d">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Sale Details Section -->
+                    <div class="section-3d">
+                        <h6 class="text-primary mb-2"><i class="fas fa-receipt"></i> Sale Details</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-2">
+                                    <label for="{{ sale_form.customer.id_for_label }}" class="form-label">Customer *</label>
+                                    {{ sale_form.customer }}
+                                    {% if sale_form.customer.errors %}
+                                        <div class="text-danger">{{ sale_form.customer.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <label for="{{ sale_form.notes.id_for_label }}" class="form-label">Notes</label>
+                            {{ sale_form.notes }}
+                            {% if sale_form.notes.errors %}
+                                <div class="text-danger">{{ sale_form.notes.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-2">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        {{ sale_form.is_paid }}
+                                        <label class="form-check-label" for="{{ sale_form.is_paid.id_for_label }}">
+                                            Is Paid
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="{{ sale_form.payment_method.id_for_label }}" class="form-label">Payment Method</label>
+                                    {{ sale_form.payment_method }}
+                                    {% if sale_form.payment_method.errors %}
+                                        <div class="text-danger">{{ sale_form.payment_method.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- First Item Section -->
+                    <div class="section-3d">
+                        <h6 class="text-primary mb-2"><i class="fas fa-box"></i> First Item (Required)</h6>
+                        <div class="alert alert-info alert-3d py-2">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Note:</strong> Every sale must have at least one item. Select the item and quantity below to create the sale.
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="mb-2">
+                                    <label for="{{ item_form.product_type.id_for_label }}" class="form-label">Product Type *</label>
+                                    {{ item_form.product_type }}
+                                    {% if item_form.product_type.errors %}
+                                        <div class="text-danger">{{ item_form.product_type.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-2">
+                                    <label for="{{ item_form.retail_item.id_for_label }}" class="form-label retail-item-label">Retail Product *</label>
+                                    {{ item_form.retail_item }}
+                                    {% if item_form.retail_item.errors %}
+                                        <div class="text-danger">{{ item_form.retail_item.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-2">
+                                    <label for="{{ item_form.wholesale_item.id_for_label }}" class="form-label wholesale-item-label">Whole Sale Product *</label>
+                                    {{ item_form.wholesale_item }}
+                                    {% if item_form.wholesale_item.errors %}
+                                        <div class="text-danger">{{ item_form.wholesale_item.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="mb-2">
+                                    <label for="{{ item_form.quantity.id_for_label }}" class="form-label">Quantity *</label>
+                                    {{ item_form.quantity }}
+                                    {% if item_form.quantity.errors %}
+                                        <div class="text-danger">{{ item_form.quantity.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-2">
+                                    <label for="{{ item_form.unit_price.id_for_label }}" class="form-label">Unit Price *</label>
+                                    {{ item_form.unit_price }}
+                                    {% if item_form.unit_price.errors %}
+                                        <div class="text-danger">{{ item_form.unit_price.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'sales_list' %}" class="btn btn-secondary btn-3d">
+                            <i class="fas fa-arrow-left"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-3d" id="createSaleBtn">
+                            <span class="btn-text">
+                                <i class="fas fa-save"></i> Create Sale with Item
+                            </span>
+                            <span class="btn-spinner" style="display: none;">
+                                <i class="fas fa-spinner fa-spin"></i> Creating Sale...
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const productTypeSelect = document.getElementById('id_product_type');
+    const retailItemSelect = document.getElementById('id_retail_item');
+    const wholesaleItemSelect = document.getElementById('id_wholesale_item');
+    const unitPriceInput = document.getElementById('id_unit_price');
+    const quantityInput = document.getElementById('id_quantity');
+    const saleForm = document.querySelector('form');
+    const createSaleBtn = document.getElementById('createSaleBtn');
+    const btnText = createSaleBtn.querySelector('.btn-text');
+    const btnSpinner = createSaleBtn.querySelector('.btn-spinner');
+    
+    // Store item prices for quick lookup
+    const retailItemPrices = {
+        {% for item in item_form.retail_item.field.queryset %}
+        {{ item.pk }}: {{ item.unit_price|floatformat:2 }},
+        {% endfor %}
+    };
+    
+    const wholesaleItemPrices = {
+        {% for item in item_form.wholesale_item.field.queryset %}
+        {{ item.pk }}: {{ item.selling_price|floatformat:2 }},
+        {% endfor %}
+    };
+    
+    // Set default quantity to 1 when page loads
+    quantityInput.value = 1;
+    
+    // Function to toggle product fields based on selection
+    function toggleProductFields() {
+        const productType = productTypeSelect.value;
+        const retailItemLabel = document.querySelector('.retail-item-label');
+        const wholesaleItemLabel = document.querySelector('.wholesale-item-label');
+        const retailItemDiv = retailItemSelect.closest('.mb-2');
+        const wholesaleItemDiv = wholesaleItemSelect.closest('.mb-2');
+        
+        if (productType === 'retail') {
+            retailItemDiv.style.display = 'block';
+            wholesaleItemDiv.style.display = 'none';
+            retailItemLabel.textContent = 'Retail Product *';
+            retailItemSelect.required = true;
+            wholesaleItemSelect.required = false;
+            wholesaleItemSelect.value = '';
+        } else if (productType === 'wholesale') {
+            retailItemDiv.style.display = 'none';
+            wholesaleItemDiv.style.display = 'block';
+            wholesaleItemLabel.textContent = 'Whole Sale Product *';
+            wholesaleItemSelect.required = true;
+            retailItemSelect.required = false;
+            retailItemSelect.value = '';
+        }
+    }
+    
+    // Function to update unit price based on selected item
+    function updateUnitPrice() {
+        const productType = productTypeSelect.value;
+        let price = 0;
+        
+        if (productType === 'retail' && retailItemSelect.value) {
+            price = retailItemPrices[retailItemSelect.value] || 0;
+        } else if (productType === 'wholesale' && wholesaleItemSelect.value) {
+            price = wholesaleItemPrices[wholesaleItemSelect.value] || 0;
+        }
+        
+        unitPriceInput.value = price;
+    }
+    
+    // Event listeners
+    productTypeSelect.addEventListener('change', function() {
+        toggleProductFields();
+        updateUnitPrice();
+    });
+    
+    retailItemSelect.addEventListener('change', updateUnitPrice);
+    wholesaleItemSelect.addEventListener('change', updateUnitPrice);
+    
+    // Initialize field visibility
+    toggleProductFields();
+    updateUnitPrice();
+    
+    // Allow quantity to be changed when an item is selected
+    function updateQuantityState() {
+        const productType = productTypeSelect.value;
+        let hasSelection = false;
+        
+        if (productType === 'retail' && retailItemSelect.value) {
+            hasSelection = true;
+        } else if (productType === 'wholesale' && wholesaleItemSelect.value) {
+            hasSelection = true;
+        }
+        
+        if (hasSelection) {
+            quantityInput.readOnly = false;
+            quantityInput.style.backgroundColor = '';
+        } else {
+            quantityInput.value = 1;
+            quantityInput.readOnly = true;
+            quantityInput.style.backgroundColor = '#f8f9fa';
+        }
+    }
+    
+    // Update quantity state when items change
+    retailItemSelect.addEventListener('change', updateQuantityState);
+    wholesaleItemSelect.addEventListener('change', updateQuantityState);
+    
+    // Initialize quantity state
+    updateQuantityState();
+    
+    // Handle form submission with loading effect
+    saleForm.addEventListener('submit', function(e) {
+        // Prevent immediate submission to show loading effect
+        e.preventDefault();
+        
+        // Show loading state
+        btnText.style.display = 'none';
+        btnSpinner.style.display = 'inline';
+        createSaleBtn.disabled = true;
+        createSaleBtn.style.opacity = '0.7';
+        createSaleBtn.style.cursor = 'not-allowed';
+        
+        // Add subtle pulse animation
+        createSaleBtn.style.animation = 'pulse 1s infinite';
+        
+        // Add loading overlay to form
+        const overlay = document.createElement('div');
+        overlay.className = 'form-loading-overlay';
+        overlay.style.cssText = `
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            border-radius: 0.375rem;
+        `;
+        overlay.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>';
+        
+        const card = document.querySelector('.card-body');
+        card.style.position = 'relative';
+        card.appendChild(overlay);
+        
+        // Submit form after a short delay to show loading effect
+        setTimeout(function() {
+            saleForm.submit();
+        }, 500);
+    });
+    
+    // Handle initial state
+    handleItemChange.call(itemSelect);
+    
+    // Add event listener for item selection changes
+    itemSelect.addEventListener('change', handleItemChange);
+    
+    // Add input validation for quantity (must be at least 1)
+    quantityInput.addEventListener('input', function() {
+        if (this.value < 1 || this.value === '') {
+            this.value = 1;
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block page_title %}Send WhatsApp Reminder - {{ debt.customer.name }}{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+    <a href="{% url 'debt_detail' debt.pk %}" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left"></i> Back to Debt
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="m-0 font-weight-bold text-primary">
+                    <i class="fab fa-whatsapp"></i> Send WhatsApp Reminder
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6>Debt Information</h6>
+                    <p><strong>Customer:</strong> {{ debt.customer.name }}</p>
+                    <p><strong>Phone:</strong> {{ debt.customer.phone|default:"No phone number" }}</p>
+                    <p><strong>Amount:</strong> TZS {{ debt.amount|floatformat:0|intcomma }}</p>
+                    <p><strong>Remaining:</strong> TZS {{ debt.remaining_amount|floatformat:0|intcomma }}</p>
+                    <p><strong>Due Date:</strong> {{ debt.due_date|date:"F d, Y" }}</p>
+                    <p><strong>Status:</strong>
+                        {% if debt.status == 'pending' %}
+                            <span class="badge bg-warning">Pending</span>
+                        {% elif debt.status == 'partial' %}
+                            <span class="badge bg-info">Partially Paid</span>
+                        {% elif debt.status == 'paid' %}
+                            <span class="badge bg-success">Paid</span>
+                        {% elif debt.status == 'overdue' %}
+                            <span class="badge bg-danger">Overdue</span>
+                        {% endif %}
+                    </p>
+                </div>
+
+                {% if debt.customer.phone %}
+                    <div class="alert alert-warning">
+                        <h6><i class="fab fa-whatsapp"></i> WhatsApp Not Available</h6>
+                        <p>WhatsApp Business API is not currently available through Africa's Talking Python SDK.</p>
+                        <p><strong>To enable WhatsApp messaging:</strong></p>
+                        <ul>
+                            <li>Go to your Africa's Talking dashboard</li>
+                            <li>Navigate to WhatsApp section</li>
+                            <li>Apply for WhatsApp Business API access</li>
+                            <li>Set up your WhatsApp Business Account</li>
+                        </ul>
+                        <p><em>Note: WhatsApp Business API requires separate approval and has additional costs.</em></p>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <h6>Alternative: Use SMS Instead</h6>
+                        <p>You can send SMS reminders which work immediately with your current setup.</p>
+                        <a href="{% url 'send_debt_sms' debt.pk %}" class="btn btn-primary">
+                            <i class="fas fa-sms"></i> Send SMS Reminder Instead
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>No Phone Number</strong><br>
+                        This customer does not have a phone number on record. Please update their contact information first.
+                    </div>
+                    <a href="{% url 'customer_detail' debt.customer.pk %}" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Update Customer Info
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block page_title %}Send SMS Reminder - {{ debt.customer.name }}{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+    <a href="{% url 'debt_detail' debt.pk %}" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left"></i> Back to Debt
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-sms"></i> Send SMS Reminder
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6>Debt Information</h6>
+                    <p><strong>Customer:</strong> {{ debt.customer.name }}</p>
+                    <p><strong>Phone:</strong> {{ debt.customer.phone|default:"No phone number" }}</p>
+                    <p><strong>Amount:</strong> TZS {{ debt.amount|floatformat:0|intcomma }}</p>
+                    <p><strong>Remaining:</strong> TZS {{ debt.remaining_amount|floatformat:0|intcomma }}</p>
+                    <p><strong>Due Date:</strong> {{ debt.due_date|date:"F d, Y" }}</p>
+                    <p><strong>Status:</strong>
+                        {% if debt.status == 'pending' %}
+                            <span class="badge bg-warning">Pending</span>
+                        {% elif debt.status == 'partial' %}
+                            <span class="badge bg-info">Partially Paid</span>
+                        {% elif debt.status == 'paid' %}
+                            <span class="badge bg-success">Paid</span>
+                        {% elif debt.status == 'overdue' %}
+                            <span class="badge bg-danger">Overdue</span>
+                        {% endif %}
+                    </p>
+                </div>
+
+                {% if debt.customer.phone %}
+                    <div class="alert alert-warning">
+                        <h6>Message Preview</h6>
+                        <div class="border p-3 bg-light">
+                            {% if debt.status == 'paid' %}
+                                Habari {{ debt.customer.name }}, deni lako la TZS {{ debt.amount|floatformat:0|intcomma }} limekwisha lipwa. Asante kwa kufanya biashara nasi.
+                            {% elif debt.status == 'overdue' %}
+                                Habari {{ debt.customer.name }}, deni lako la TZS {{ debt.remaining_amount|floatformat:0|intcomma }} lilikwisha muda wake tarehe {{ debt.due_date|date:"d/m/Y" }}. Tafadhali lipa haraka ili tusiwe na shida.
+                            {% else %}
+                                Habari {{ debt.customer.name }}, una deni la TZS {{ debt.remaining_amount|floatformat:0|intcomma }} linalotakiwa kulipwa kabla ya {{ debt.due_date|date:"d/m/Y" }}. Tafadhali lipa kwa wakati.
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-paper-plane"></i> Send SMS Reminder
+                            </button>
+                        </div>
+                    </form>
+                {% else %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>No Phone Number</strong><br>
+                        This customer does not have a phone number on record. Please update their contact information first.
+                    </div>
+                    <a href="{% url 'customer_detail' debt.customer.pk %}" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Update Customer Info
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

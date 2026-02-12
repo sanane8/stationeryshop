@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load humanize tz querystring %}
+
+{% block page_title %}Expenditures{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+    <a href="{% url 'create_expenditure' %}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> New Expenditure
+    </a>
+    <a href="{% url 'expenditures_export' %}{% if start_date or end_date %}?{% endif %}{% if start_date %}start_date={{ start_date }}{% endif %}{% if end_date %}{% if start_date %}&{% endif %}end_date={{ end_date }}{% endif %}" class="btn btn-outline-secondary ms-2">
+        <i class="fas fa-file-csv"></i> Export CSV
+    </a>
+    <a href="{% url 'expenditures_export_pdf' %}{% if start_date or end_date %}?{% endif %}{% if start_date %}start_date={{ start_date }}{% endif %}{% if end_date %}{% if start_date %}&{% endif %}end_date={{ end_date }}{% endif %}" class="btn btn-outline-secondary ms-2">
+        <i class="fas fa-file-pdf"></i> Export PDF
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h6 class="m-0">Expenditures</h6>
+        <div><strong>Total Spent: TZS {{ total_spent|floatformat:0|intcomma }}</strong></div>
+    </div>
+    <div class="card-body">
+        {% if expenditures %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Category</th>
+                        <th>Description</th>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Created By</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for e in expenditures %}
+                    <tr>
+                        <td>{{ e.id }}</td>
+                        <td>{{ e.get_category_display }}</td>
+                        <td>{{ e.description|default:'-' }}</td>
+                        <td>{{ e.expense_date|localtime|date:'M d, Y H:i' }}</td>
+                        <td>TZS {{ e.amount|floatformat:0|intcomma }}</td>
+                        <td>{{ e.created_by.get_full_name|default:e.created_by.username }}</td>
+                        <td>
+                            <form method="post" action="{% url 'delete_expenditure' e.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this expenditure?');">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <p class="text-muted">No expenditures recorded yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% if page_obj.has_other_pages %}
+<nav aria-label="Expenditures pagination" class="mt-3">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?{% url_replace 'page' page_obj.previous_page_number %}">Previous</a></li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Previous</span></li>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+            {% if num == page_obj.number %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% else %}
+                <li class="page-item"><a class="page-link" href="?{% url_replace 'page' num %}">{{ num }}</a></li>
+            {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?{% url_replace 'page' page_obj.next_page_number %}">Next</a></li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Next</span></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

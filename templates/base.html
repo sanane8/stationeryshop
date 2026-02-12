@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Stationery Tracker (TZS){% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    {% load static tz %}
+    <link href="{% static 'custom.css' %}" rel="stylesheet">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background-color: #2c3e50;
+            position: relative;
+        }
+        .sidebar .nav-link {
+            color: #ecf0f1;
+            padding: 0.75rem 1rem;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #34495e;
+            color: #fff;
+        }
+        .sidebar .nav-link.active {
+            background-color: #3498db;
+            color: #fff;
+        }
+        .main-content {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .stat-card.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        .stat-card.warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .stat-card.info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        .table th {
+            background-color: #f8f9fa;
+            border-top: none;
+        }
+        .badge {
+            font-size: 0.75em;
+        }
+        /* Mobile sidebar overlay */
+        @media (max-width: 767.98px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                z-index: 1050;
+                width: 250px;
+                height: 100vh;
+                overflow-y: auto;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease-in-out;
+            }
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            .sidebar-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 1040;
+                display: none;
+            }
+            .sidebar-overlay.show {
+                display: block;
+            }
+        }
+        
+        /* Bridge gap between sidebar and footer */
+        @media (min-width: 768px) {
+            .sidebar {
+                min-height: calc(100vh - 56px); /* Account for footer height */
+            }
+        }
+    </style>
+</head>
+<body>
+    {% localtime on %}
+    <!-- Mobile sidebar overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse" id="sidebar">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4 position-relative">
+                        <!-- Close button for mobile -->
+                        <button class="btn btn-link text-white d-md-none position-absolute top-0 end-0 p-2" type="button" id="sidebarClose" aria-label="Close navigation" style="text-decoration: none;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        <h4 class="text-white">
+                            <i class="fas fa-store"></i> Stationery Tracker
+                        </h4>
+                    </div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'product' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'product_list' %}">
+                                <i class="fas fa-box"></i> Whole Sale Products
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'supplier' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'supplier_list' %}">
+                                <i class="fas fa-truck"></i> Suppliers
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'stationery' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'stationery_list' %}">
+                                <i class="fas fa-cube"></i> Retail Sale Products
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'sales' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'sales_list' %}">
+                                <i class="fas fa-shopping-cart"></i> Sales
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'debts' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'debts_list' %}">
+                                <i class="fas fa-credit-card"></i> Debts
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'customers' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'customers_list' %}">
+                                <i class="fas fa-users"></i> Customers
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'expend' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'expenditures_list' %}">
+                                <i class="fas fa-wallet"></i> Expenditures
+                            </a>
+                        </li>
+                        <li class="nav-item mt-3">
+                            <a class="nav-link" href="/admin/">
+                                <i class="fas fa-cog"></i> Admin Panel
+                            </a>
+                        </li>
+                        </li>
+                        <li class="nav-item">
+                            <form method="post" action="{% url 'logout' %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="nav-link text-danger" style="background: none; border: none; padding: 0.75rem 1rem; width: 100%; text-align: left; cursor: pointer;">
+                                    <i class="fas fa-sign-out-alt"></i> Logout
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <div class="d-flex align-items-center">
+                        <!-- Mobile menu toggle button -->
+                        <button class="btn btn-outline-primary d-md-none me-3" type="button" id="sidebarToggle" aria-label="Toggle navigation">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <h1 class="h2 mb-0">{% block page_title %}Dashboard{% endblock %}</h1>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <!-- User Info -->
+                        {% if user.is_authenticated %}
+                        <div class="d-none d-md-flex align-items-center text-muted">
+                            <i class="fas fa-user-circle me-2"></i>
+                            <span class="small">
+                                Logged in as: <strong class="text-primary">{{ user.get_full_name|default:user.username }}</strong>
+                            </span>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Page Actions -->
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            {% block page_actions %}{% endblock %}
+                        </div>
+                        
+                        <!-- Logout Button -->
+                        {% if user.is_authenticated %}
+                        <form method="post" action="{% url 'logout' %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger btn-sm" title="Logout">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Messages -->
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <!-- Page content -->
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Mobile sidebar toggle functionality
+        (function() {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            
+            const sidebarClose = document.getElementById('sidebarClose');
+            
+            if (sidebarToggle && sidebar && sidebarOverlay) {
+                // Toggle sidebar
+                function toggleSidebar() {
+                    sidebar.classList.toggle('show');
+                    sidebarOverlay.classList.toggle('show');
+                }
+                
+                // Close sidebar
+                function closeSidebar() {
+                    sidebar.classList.remove('show');
+                    sidebarOverlay.classList.remove('show');
+                }
+                
+                // Open sidebar
+                sidebarToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    toggleSidebar();
+                });
+                
+                // Close sidebar when close button is clicked
+                if (sidebarClose) {
+                    sidebarClose.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        closeSidebar();
+                    });
+                }
+                
+                // Close sidebar when overlay is clicked
+                sidebarOverlay.addEventListener('click', function() {
+                    closeSidebar();
+                });
+                
+                // Close sidebar when clicking on a nav link (mobile)
+                const navLinks = sidebar.querySelectorAll('.nav-link');
+                navLinks.forEach(function(link) {
+                    link.addEventListener('click', function() {
+                        if (window.innerWidth < 768) {
+                            closeSidebar();
+                        }
+                    });
+                });
+                
+                // Close sidebar on window resize if resizing to desktop
+                window.addEventListener('resize', function() {
+                    if (window.innerWidth >= 768) {
+                        closeSidebar();
+                    }
+                });
+            }
+        })();
+    </script>
+    {% block extra_js %}{% endblock %}
+    {% endlocaltime %}
+        <!-- Site footer -->
+        <footer class="text-center text-white" style="background-color:#2c3e50;">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-3 col-lg-2 d-md-block" style="background-color:#2c3e50; min-height: 56px;">
+                        <!-- This div merges with sidebar -->
+                    </div>
+                    <div class="col-md-9 ms-sm-auto col-lg-10">
+                        <div class="container py-3">
+                            <small style="font-size:0.875rem;">SP Msabila Stationery - 0746 840 409 | paul.sanane@gmail.com &copy; {% now "Y" %}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+</body>
+</html>

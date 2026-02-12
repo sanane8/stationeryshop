@@ -1,0 +1,297 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'product_list' %}">Whole Sale Products</a></li>
+                    <li class="breadcrumb-item active">{{ title }}</li>
+                </ol>
+            </nav>
+            <h1 class="h3 mb-0">{{ title }}</h1>
+            <p class="text-muted mb-0">
+                {% if product %}Edit whole sale product "{{ product.name }}"{% else %}Add a new whole sale product to your inventory{% endif %}
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'product_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Whole Sale Products
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Product Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Basic Information -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="{{ form.name.id_for_label }}" class="form-label">Product Name *</label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                    <div class="text-danger">{{ form.name.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.sku.id_for_label }}" class="form-label">SKU *</label>
+                                {{ form.sku }}
+                                {% if form.sku.errors %}
+                                    <div class="text-danger">{{ form.sku.errors }}</div>
+                                {% endif %}
+                                <div class="form-text">Stock Keeping Unit - unique identifier</div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="{{ form.category.id_for_label }}" class="form-label">Category *</label>
+                                {{ form.category }}
+                                {% if form.category.errors %}
+                                    <div class="text-danger">{{ form.category.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.supplier.id_for_label }}" class="form-label">Supplier *</label>
+                                {{ form.supplier }}
+                                {% if form.supplier.errors %}
+                                    <div class="text-danger">{{ form.supplier.errors }}</div>
+                                {% endif %}
+                                <div class="form-text">
+                                    <a href="{% url 'supplier_create' %}" target="_blank">Add new supplier</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="text-danger">{{ form.description.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Pricing Information -->
+                        <h5 class="mb-3">Pricing Information</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="{{ form.supplier_price.id_for_label }}" class="form-label">Supplier Price (TZS) *</label>
+                                {{ form.supplier_price }}
+                                {% if form.supplier_price.errors %}
+                                    <div class="text-danger">{{ form.supplier_price.errors }}</div>
+                                {% endif %}
+                                <div class="form-text">Price you pay to supplier</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.selling_price.id_for_label }}" class="form-label">Selling Price (TZS) *</label>
+                                {{ form.selling_price }}
+                                {% if form.selling_price.errors %}
+                                    <div class="text-danger">{{ form.selling_price.errors }}</div>
+                                {% endif %}
+                                <div class="form-text">Price you charge customers</div>
+                            </div>
+                        </div>
+
+                        <!-- Carton Information -->
+                        <h5 class="mb-3">Carton Information</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <label for="{{ form.units_per_carton.id_for_label }}" class="form-label">Units per Carton *</label>
+                                {{ form.units_per_carton }}
+                                {% if form.units_per_carton.errors %}
+                                    <div class="text-danger">{{ form.units_per_carton.errors }}</div>
+                                {% endif %}
+                                <div class="form-text">Number of units in one carton</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="{{ form.unit_type.id_for_label }}" class="form-label">Unit Type *</label>
+                                {{ form.unit_type }}
+                                {% if form.unit_type.errors %}
+                                    <div class="text-danger">{{ form.unit_type.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label for="{{ form.carton_weight.id_for_label }}" class="form-label">Weight per Carton (kg)</label>
+                                {{ form.carton_weight }}
+                                {% if form.carton_weight.errors %}
+                                    <div class="text-danger">{{ form.carton_weight.errors }}</div>
+                                {% endif %}
+                                <div class="form-text">Optional</div>
+                            </div>
+                        </div>
+
+                        <!-- Stock Information -->
+                        <h5 class="mb-3">Stock Information</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="{{ form.cartons_in_stock.id_for_label }}" class="form-label">Cartons in Stock *</label>
+                                {{ form.cartons_in_stock }}
+                                {% if form.cartons_in_stock.errors %}
+                                    <div class="text-danger">{{ form.cartons_in_stock.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.minimum_cartons.id_for_label }}" class="form-label">Minimum Cartons</label>
+                                {{ form.minimum_cartons }}
+                                {% if form.minimum_cartons.errors %}
+                                    <div class="text-danger">{{ form.minimum_cartons.errors }}</div>
+                                {% endif %}
+                                <div class="form-text">Alert when stock falls below this level</div>
+                            </div>
+                        </div>
+
+                        <!-- Additional Information -->
+                        <h5 class="mb-3">Additional Information</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <label for="{{ form.notes.id_for_label }}" class="form-label">Notes</label>
+                                {{ form.notes }}
+                                {% if form.notes.errors %}
+                                    <div class="text-danger">{{ form.notes.errors }}</div>
+                                {% endif %}
+                                <div class="form-text">Additional notes about this product</div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div class="form-check">
+                                    {{ form.is_active }}
+                                    <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                        Product is active and available for sale
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'product_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> {% if product %}Update Product{% else %}Create Product{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Help Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">Help & Tips</h6>
+                </div>
+                <div class="card-body">
+                    <h6>Product Information</h6>
+                    <ul class="small text-muted">
+                        <li>Use descriptive names for easy identification</li>
+                        <li>SKU will be automatically generated based on name and category</li>
+                        <li>Choose appropriate categories for better organization</li>
+                    </ul>
+
+                    <h6>Pricing</h6>
+                    <ul class="small text-muted">
+                        <li>Supplier price is what you pay to get the product</li>
+                        <li>Selling price is what customers pay</li>
+                        <li>Profit margin is calculated automatically</li>
+                    </ul>
+
+                    <h6>Carton Information</h6>
+                    <ul class="small text-muted">
+                        <li>Units per carton helps with inventory management</li>
+                        <li>Weight is useful for shipping calculations</li>
+                        <li>Unit type should match how you sell the product</li>
+                    </ul>
+
+                    <h6>Stock Management</h6>
+                    <ul class="small text-muted">
+                        <li>Set minimum cartons for low stock alerts</li>
+                        <li>Regular updates help maintain accurate inventory</li>
+                        <li>Active products appear in sales dropdown</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Quick Links</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'supplier_list' %}" class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-truck"></i> Manage Suppliers
+                        </a>
+                        <a href="{% url 'product_list' %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-box"></i> View All Products
+                        </a>
+                        {% if not form.category.field.queryset %}
+                        <a href="{% url 'product_create' %}" class="btn btn-outline-warning btn-sm">
+                            <i class="fas fa-tags"></i> Add Category First
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const nameField = document.getElementById('id_name');
+    const categoryField = document.getElementById('id_category');
+    const skuField = document.getElementById('id_sku');
+    
+    // Only show preview for new products (when SKU is readonly)
+    if (skuField && skuField.hasAttribute('readonly')) {
+        function generatePreviewSKU() {
+            const name = nameField.value || '';
+            const categoryId = categoryField.value;
+            
+            if (name && categoryId) {
+                // Get category name from select option
+                const categoryOption = categoryField.options[categoryField.selectedIndex];
+                const categoryName = categoryOption ? categoryOption.text : '';
+                
+                // Generate preview SKU (same logic as backend)
+                const categoryAbbr = categoryName.replace(/[^A-Za-z0-9]/g, '').substring(0, 3).toUpperCase();
+                const nameAbbr = name.replace(/[^A-Za-z0-9]/g, '').substring(0, 3).toUpperCase();
+                const yearSuffix = new Date().getFullYear().toString().slice(-2);
+                
+                // For preview, use a placeholder sequential number
+                const previewSKU = `${categoryAbbr}-${nameAbbr}-${yearSuffix}-XXX`;
+                
+                skuField.value = previewSKU;
+                skuField.style.color = '#6c757d'; // Gray color to indicate preview
+            } else {
+                skuField.value = '';
+            }
+        }
+        
+        nameField.addEventListener('input', generatePreviewSKU);
+        categoryField.addEventListener('change', generatePreviewSKU);
+        
+        // Generate initial preview if fields have values
+        generatePreviewSKU();
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

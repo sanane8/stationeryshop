@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load querystring %}
+
+{% block page_title %}Customers{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+    <a href="{% url 'create_customer' %}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Add Customer
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Search -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-6">
+                <label for="search" class="form-label">Search Customers</label>
+                <input type="text" class="form-control" id="search" name="search" 
+                       value="{{ search_query }}" placeholder="Search by name, email, or phone">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-search"></i> Search
+                </button>
+                <a href="{% url 'customers_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Customers Table -->
+<div class="card">
+    <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">Customers ({{ customers.paginator.count }})</h6>
+    </div>
+    <div class="card-body">
+        {% if customers %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Address</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for customer in customers %}
+                        <tr>
+                            <td><strong>{{ customer.name }}</strong></td>
+                            <td>
+                                {% if customer.email %}
+                                    <a href="mailto:{{ customer.email }}">{{ customer.email }}</a>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if customer.phone %}
+                                    <a href="tel:{{ customer.phone }}">{{ customer.phone }}</a>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if customer.address %}
+                                    {{ customer.address|truncatechars:30 }}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if customer.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'customer_detail' customer.pk %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No customers found</h5>
+                <p class="text-muted">Start by adding your first customer.</p>
+                <a href="{% url 'create_customer' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add First Customer
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% if page_obj.has_other_pages %}
+<nav aria-label="Customers pagination" class="mt-3">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?{% url_replace 'page' page_obj.previous_page_number %}">Previous</a></li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Previous</span></li>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+            {% if num == page_obj.number %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% else %}
+                <li class="page-item"><a class="page-link" href="?{% url_replace 'page' num %}">{{ num }}</a></li>
+            {% endif %}
+        {% endfor %}
+                {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?{% url_replace 'page' page_obj.next_page_number %}">Next</a></li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Next</span></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

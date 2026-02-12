@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'supplier_list' %}">Suppliers</a></li>
+                    <li class="breadcrumb-item active">{{ title }}</li>
+                </ol>
+            </nav>
+            <h1 class="h3 mb-0">{{ title }}</h1>
+            <p class="text-muted mb-0">
+                {% if supplier %}Edit supplier "{{ supplier.name }}"{% else %}Add a new supplier to your network{% endif %}
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'supplier_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Suppliers
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Supplier Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Basic Information -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="{{ form.name.id_for_label }}" class="form-label">Supplier Name *</label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                    <div class="text-danger">{{ form.name.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.contact_person.id_for_label }}" class="form-label">Contact Person</label>
+                                {{ form.contact_person }}
+                                {% if form.contact_person.errors %}
+                                    <div class="text-danger">{{ form.contact_person.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="{{ form.phone.id_for_label }}" class="form-label">Phone Number</label>
+                                {{ form.phone }}
+                                {% if form.phone.errors %}
+                                    <div class="text-danger">{{ form.phone.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.email.id_for_label }}" class="form-label">Email Address</label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger">{{ form.email.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="{{ form.address.id_for_label }}" class="form-label">Address</label>
+                            {{ form.address }}
+                            {% if form.address.errors %}
+                                <div class="text-danger">{{ form.address.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">Physical address of the supplier</div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div class="form-check">
+                                    {{ form.is_active }}
+                                    <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                        Supplier is active and available for business
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'supplier_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> {% if supplier %}Update Supplier{% else %}Create Supplier{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Help Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">Help & Tips</h6>
+                </div>
+                <div class="card-body">
+                    <h6>Supplier Information</h6>
+                    <ul class="small text-muted">
+                        <li>Use accurate business names for official records</li>
+                        <li>Contact person helps with daily communications</li>
+                        <li>Phone numbers should include country code for international calls</li>
+                        <li>Email addresses are useful for sending purchase orders</li>
+                    </ul>
+
+                    <h6>Best Practices</h6>
+                    <ul class="small text-muted">
+                        <li>Keep supplier information up to date</li>
+                        <li>Maintain good relationships with suppliers</li>
+                        <li>Track multiple suppliers for the same products</li>
+                        <li>Regular communication ensures better service</li>
+                    </ul>
+
+                    <h6>Next Steps</h6>
+                    <ul class="small text-muted">
+                        <li>After adding supplier, create products</li>
+                        <li>Link products to their respective suppliers</li>
+                        <li>Set up regular ordering schedules</li>
+                        <li>Maintain records of all transactions</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Quick Links</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'product_list' %}" class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-box"></i> Manage Products
+                        </a>
+                        <a href="{% url 'supplier_list' %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-truck"></i> View All Suppliers
+                        </a>
+                        <a href="{% url 'product_create' %}" class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-plus"></i> Add Product
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

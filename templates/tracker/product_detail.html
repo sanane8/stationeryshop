@@ -1,0 +1,348 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block page_title %}Whole Sale Product Details{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'product_list' %}">Whole Sale Products</a></li>
+                    <li class="breadcrumb-item active">{{ product.name }}</li>
+                </ol>
+            </nav>
+            <h1 class="h3 mb-0">{{ product.name }}</h1>
+            <p class="text-muted mb-0">SKU: {{ product.sku }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'product_update' product.pk %}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Edit Product
+            </a>
+            <a href="{% url 'product_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Whole Sale Products
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Product Details -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Product Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Product Name:</strong></td>
+                                    <td>{{ product.name }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>SKU:</strong></td>
+                                    <td><span class="badge bg-secondary">{{ product.sku }}</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Category:</strong></td>
+                                    <td>{{ product.category.name }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Supplier:</strong></td>
+                                    <td>{{ product.supplier.name }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Unit Type:</strong></td>
+                                    <td>{{ product.get_unit_type_display }}</td>
+                                </tr>
+                                {% if product.carton_weight %}
+                                <tr>
+                                    <td><strong>Weight per Carton:</strong></td>
+                                    <td>{{ product.carton_weight }} kg</td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Supplier Price:</strong></td>
+                                    <td class="text-end">TZS {{ product.supplier_price|floatformat:0|intcomma }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Selling Price:</strong></td>
+                                    <td class="text-end">TZS {{ product.selling_price|floatformat:0|intcomma }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Profit per Carton:</strong></td>
+                                    <td class="text-end text-success">TZS {{ product.profit_per_carton|floatformat:0|intcomma }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Profit Margin:</strong></td>
+                                    <td class="text-end">
+                                        <span class="badge {% if product.profit_margin > 20 %}bg-success{% elif product.profit_margin > 10 %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ product.profit_margin|floatformat:1 }}%
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Status:</strong></td>
+                                    <td>
+                                        {% if product.is_active %}
+                                            <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    {% if product.description %}
+                        <div class="mt-3">
+                            <h6>Description</h6>
+                            <p>{{ product.description }}</p>
+                        </div>
+                    {% endif %}
+                    {% if product.notes %}
+                        <div class="mt-3">
+                            <h6>Notes</h6>
+                            <p>{{ product.notes }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Supplier Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Supplier Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Supplier Name:</strong></td>
+                                    <td>{{ product.supplier.name }}</td>
+                                </tr>
+                                {% if product.supplier.contact_person %}
+                                <tr>
+                                    <td><strong>Contact Person:</strong></td>
+                                    <td>{{ product.supplier.contact_person }}</td>
+                                </tr>
+                                {% endif %}
+                                {% if product.supplier.phone %}
+                                <tr>
+                                    <td><strong>Phone:</strong></td>
+                                    <td>{{ product.supplier.phone }}</td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            {% if product.supplier.email %}
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Email:</strong></td>
+                                    <td>{{ product.supplier.email }}</td>
+                                </tr>
+                            </table>
+                            {% endif %}
+                            {% if product.supplier.address %}
+                            <div class="mt-2">
+                                <h6>Address</h6>
+                                <p class="text-muted">{{ product.supplier.address }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stock Information -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Stock Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        {% if product.is_low_stock %}
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <strong>Low Stock Alert!</strong>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle"></i>
+                                <strong>Stock Level Good</strong>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <table class="table table-borderless">
+                        <tr>
+                            <td><strong>Cartons in Stock:</strong></td>
+                            <td class="text-end">
+                                <span class="{% if product.is_low_stock %}text-danger{% endif %}">
+                                    {{ product.cartons_in_stock }}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Minimum Cartons:</strong></td>
+                            <td class="text-end">{{ product.minimum_cartons }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Units per Carton:</strong></td>
+                            <td class="text-end">{{ product.units_per_carton }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total Units:</strong></td>
+                            <td class="text-end"><strong>{{ product.total_units_in_stock }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total Stock Value:</strong></td>
+                            <td class="text-end"><strong>TZS {{ product.get_total_value|floatformat:0|intcomma }}</strong></td>
+                        </tr>
+                    </table>
+
+                    <!-- Stock Progress Bar -->
+                    <div class="mt-3">
+                        <label class="form-label">Stock Level</label>
+                        {% if product.minimum_cartons > 0 %}
+                            {% widthratio product.cartons_in_stock product.minimum_cartons 100 as stock_percentage %}
+                                <div class="progress">
+                                    {% if stock_percentage >= 100 %}
+                                        <div class="progress-bar bg-success" style="width: 100%"></div>
+                                    {% elif stock_percentage >= 50 %}
+                                        <div class="progress-bar bg-warning" style="width: {{ stock_percentage }}%"></div>
+                                    {% else %}
+                                        <div class="progress-bar bg-danger" style="width: {{ stock_percentage }}%"></div>
+                                    {% endif %}
+                                </div>
+                                <small class="text-muted">{{ stock_percentage|floatformat:0 }}% of minimum stock</small>
+                        {% else %}
+                            <div class="progress">
+                                <div class="progress-bar bg-info" style="width: 100%"></div>
+                            </div>
+                            <small class="text-muted">No minimum stock set</small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'create_sale' %}?product={{ product.pk }}" class="btn btn-primary">
+                            <i class="fas fa-shopping-cart"></i> Create Sale
+                        </a>
+                        <a href="{% url 'product_update' product.pk %}" class="btn btn-outline-warning">
+                            <i class="fas fa-edit"></i> Update Stock
+                        </a>
+                        <button class="btn btn-outline-info" onclick="window.print()">
+                            <i class="fas fa-print"></i> Print Product Info
+                        </button>
+                        {% if product.stationery_item %}
+                            <a href="{% url 'stationery_detail' product.stationery_item.pk %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-cube"></i> View Retail Product
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Linked Retail Product -->
+            {% if product.stationery_item %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">📦 Linked Retail Product</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Name:</strong> {{ product.stationery_item.name }}</p>
+                            <p class="mb-1"><strong>SKU:</strong> {{ product.stationery_item.sku }}</p>
+                            <p class="mb-1"><strong>Stock Quantity:</strong> 
+                                <span class="badge {% if product.stationery_item.is_low_stock %}bg-danger{% else %}bg-success{% endif %}">
+                                    {{ product.stationery_item.stock_quantity }} units
+                                </span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-sm table-borderless">
+                                <tr>
+                                    <td><strong>Retail Unit Price:</strong></td>
+                                    <td class="text-end">TZS {{ product.stationery_item.unit_price|floatformat:0|intcomma }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Retail Cost Price:</strong></td>
+                                    <td class="text-end">TZS {{ product.stationery_item.cost_price|floatformat:0|intcomma }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Retail Profit Margin:</strong></td>
+                                    <td class="text-end">
+                                        <span class="badge {% if product.stationery_item.profit_margin > 20 %}bg-success{% elif product.stationery_item.profit_margin > 10 %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ product.stationery_item.profit_margin|floatformat:1 }}%
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <p class="mb-0"><small class="text-muted">
+                                <i class="fas fa-sync"></i> Stock automatically synced with whole sale product inventory
+                            </small></p>
+                            <p class="mb-0"><small class="text-info">
+                                <i class="fas fa-info-circle"></i> Retail pricing managed separately for individual sales
+                            </small></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">⚠️ Retail Product Link</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2 text-warning">
+                        <i class="fas fa-exclamation-triangle"></i> No retail product linked
+                    </p>
+                    <p class="mb-0 small text-muted">
+                        This whole sale product is not linked to any retail product. Stock updates will not sync to retail inventory.
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Print Styles -->
+<style>
+@media print {
+    .btn, .breadcrumb, .d-flex.justify-content-between {
+        display: none !important;
+    }
+    .card {
+        border: 1px solid #000;
+        page-break-inside: avoid;
+    }
+}
+</style>
+{% endblock %}
